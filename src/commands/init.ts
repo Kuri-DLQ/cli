@@ -1,6 +1,21 @@
 import {Command, CliUx} from '@oclif/core'
 const inquirer = require('inquirer')
-const fs = require('fs')
+const fs = require('fs-extra')
+const {series} = require('async');
+const {exec} = require('child_process');
+
+const src: string = '.env'
+const serverDest: string = '../app_server_express/.env'
+const cdkDest: string = '../aws_infrastructure/.env'
+
+async function moveEnvFile (source: string, destination: string) {
+  try {
+    await fs.move(source, destination)
+    console.log('success!')
+  } catch (err) {
+    console.error(err)
+  };
+}
 
 export default class Init extends Command {
   static description = 'Initializes Kuri infrastructure'
@@ -49,9 +64,14 @@ export default class Init extends Command {
     const envFile = `STACK="${stackChoice}"\nACCESS_KEY="${awsAccessKey}"\nSECRET_KEY="${awsSecretKey}"\n` +
     `REGION="${awsRegion}"\nSLACK_PATH="${slackPath}"\nCLIENT_PORT=${clientPort}\nSERVER_PORT=${serverPort}`
 
+     // installClientDependencies when client dir is added
+    series([() => exec('npm run installAppDependencies')]);
+    
     fs.writeFile('.env', envFile, (e: any) => {
       console.log(e)
     })
+
+    await moveEnvFile(src, serverDest)
+    await moveEnvFile(src, cdkDest)
   }
 }
-
