@@ -2,29 +2,29 @@ import {Command, CliUx} from '@oclif/core'
 const inquirer = require('inquirer')
 const fs = require('fs-extra')
 const {series} = require('async');
-const {exec} = require('child_process');
+const {exec, execFile} = require('child_process');
 require("dotenv").config();
 
 const src: string = '.env'
 const serverDest: string = '../app_server_express/.env'
 const cdkDest: string = '../aws_infrastructure/.env'
+// import Ora from 'ora';
 
-
-function bootstrap() {
-  const child = spawn('npm run bootstrapAWS')
-  child.stdout.on('data', (data:any) => {
-    console.log(`stdout: ${data}`)
-  })
-  child.stderr.on('data', (data:any) => {
-    console.log(`stderr: ${data}`)
-  })
-  child.on('error', (error:any) => console.log(`error: ${error.message}`))
-  child.on('exit', (code:any, signal:any) => {
-    if (code) console.log(`process exit with code: ${code}`)
-    if (signal) console.log(`process killed with signal: ${signal}`)
-    console.log(`Done`)
-  })
-}
+// function bootstrap() {
+//   const child = spawn('npm run bootstrapAWS')
+//   child.stdout.on('data', (data:any) => {
+//     console.log(`stdout: ${data}`)
+//   })
+//   child.stderr.on('data', (data:any) => {
+//     console.log(`stderr: ${data}`)
+//   })
+//   child.on('error', (error:any) => console.log(`error: ${error.message}`))
+//   child.on('exit', (code:any, signal:any) => {
+//     if (code) console.log(`process exit with code: ${code}`)
+//     if (signal) console.log(`process killed with signal: ${signal}`)
+//     console.log(`Done`)
+//   })
+// }
 async function moveEnvFile (source: string, destination: string) {
   try {
     await fs.move(source, destination)
@@ -34,13 +34,13 @@ async function moveEnvFile (source: string, destination: string) {
   };
 }
 
-const deployCdk = (stackChoice: string | undefined) => {
-  if (stackChoice === 'DLQ Only') {
-    series([() => exec('cdk deploy <dlq only stack>')]);
-  } else {
-    series([() => exec('cdk deploy <main and dlq stack>')]);
-  }
-}
+// const deployCdk = (stackChoice: string | undefined) => {
+//   if (stackChoice === 'DLQ Only') {
+//     series([() => exec('cdk deploy <dlq only stack>')]);
+//   } else {
+//     series([() => exec('cdk deploy <main and dlq stack>')]);
+//   }
+// }
 
 export default class Init extends Command {
   static description = 'Initializes Kuri infrastructure'
@@ -104,35 +104,77 @@ export default class Init extends Command {
     // deployCdk(process.env.STACK)
 
 
-    series([
-      // () => exec('npm run installAppDependencies'), 
-      () => exec('npm run installCdkDependencies')
-    ]);
-
-    series([
-      // () => exec('npm run installAppDependencies'), 
-      () => exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
+    await exec('npm run installCdkDependencies')
+    await new Promise((resolve, reject) => {
+      exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
+      if (error) {
+        console.log(error)
+        console.log(`error: ${error.message}`)
+        reject(error)
+        return;
+      }
+      if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return
+      }
+        console.log(`stdout: ${stdout}`);
+        resolve('environemnt bootstrapped')
+      })
+    }).then(async () => {
+      await new Promise((resolve, reject) => { 
+        exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
         if (error) {
+          console.log(error)
           console.log(`error: ${error.message}`)
-          return
+          reject(error)
+          return;
         }
         if (stderr) {
           console.log(`stderr: ${stderr}`);
-          return;
+          return
         }
         console.log(`stdout: ${stdout}`);
-      }), 
-      // () => exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
-      //   if (error) {
-      //     console.log(`error: ${error.message}`)
-      //     return
-      //   }
-      //   if (stderr) {
-      //     console.log(`stderr: ${stderr}`);
-      //     return;
-      //   }
-      //   console.log(`stdout: ${stdout}`);
-      // })
-    ]);
+        resolve('cdk deployed')
+      })
+    });
+    })
+    // await exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
+    //   if (error) {
+    //     console.log(error)
+    //     console.log(`error: ${error.message}`)
+    //     return;
+    //   }
+    //   if (stderr) {
+    //     console.log(`stderr: ${stderr}`);
+    //     return
+    //   }
+    //   console.log(`stdout: ${stdout}`);
+    // })
+    // await exec('npm run installAppDependencies'), 
+    // series([() => exec('npm run installCdkDependencies'),
+    // () => exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
+    //   if (error) {
+    //     console.log(error)
+    //     console.log(`error: ${error.message}`)
+    //     return;
+    //   }
+    //   if (stderr) {
+    //     console.log(`stderr: ${stderr}`);
+    //     return
+    //   }
+    //   console.log(`stdout: ${stdout}`);
+    // }),
+    // () => exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
+    //   if (error) {
+    //     console.log(error)
+    //     console.log(`error: ${error.message}`)
+    //     return;
+    //   }
+    //   if (stderr) {
+    //     console.log(`stderr: ${stderr}`);
+    //     return
+    //   }
+    //   console.log(`stdout: ${stdout}`);
+    // })])
   }
 }

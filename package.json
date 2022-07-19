@@ -25,7 +25,8 @@
     "child_process": "^1.0.2",
     "dotenv": "^16.0.1",
     "fs": "^0.0.1-security",
-    "inquirer": "^8.2.4"
+    "inquirer": "^8.2.4",
+    "ora": "^6.1.2"
   },
   "devDependencies": {
     "@oclif/test": "^2",
@@ -70,9 +71,8 @@
     "installAppDependencies": "cd ../app_server_express && npm install && cd ../cli",
     "installClientDepedencies": "cd ../dashboard && npm install && cd ../cli",
     "installCdkDependencies": "cd ../aws_infrastructure && npm install && cd ../cli",
-    "bootstrapAWS": "cd ../aws_infrastructure && npm install && cdk bootstrap && ../cli",
-    "deployInfrastructure": "cd ../aws_infrastructure && cdk deploy --require-approval never && ../cli"
-
+    "bootstrapAWS": "cd ../aws_infrastructure && npm install && cdk bootstrap && cd ../cli",
+    "deployInfrastructure": "cd ../aws_infrastructure && cdk deploy --require-approval never && cd ../cli"
   },
   "engines": {
     "node": ">=12.0.0"
