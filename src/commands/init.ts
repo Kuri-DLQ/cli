@@ -2,29 +2,13 @@ import {Command, CliUx} from '@oclif/core'
 const inquirer = require('inquirer')
 const fs = require('fs-extra')
 const {series} = require('async');
-const {exec, execFile} = require('child_process');
+const {exec} = require('child_process');
 require("dotenv").config();
 
 const src: string = '.env'
 const serverDest: string = '../app_server_express/.env'
 const cdkDest: string = '../aws_infrastructure/.env'
-// import Ora from 'ora';
 
-// function bootstrap() {
-//   const child = spawn('npm run bootstrapAWS')
-//   child.stdout.on('data', (data:any) => {
-//     console.log(`stdout: ${data}`)
-//   })
-//   child.stderr.on('data', (data:any) => {
-//     console.log(`stderr: ${data}`)
-//   })
-//   child.on('error', (error:any) => console.log(`error: ${error.message}`))
-//   child.on('exit', (code:any, signal:any) => {
-//     if (code) console.log(`process exit with code: ${code}`)
-//     if (signal) console.log(`process killed with signal: ${signal}`)
-//     console.log(`Done`)
-//   })
-// }
 async function moveEnvFile (source: string, destination: string) {
   try {
     await fs.move(source, destination)
@@ -95,49 +79,82 @@ export default class Init extends Command {
     //   console.log(e)
     // })
     // await moveEnvFile(src, serverDest)
-
-
+    CliUx.ux.action.start('Creating environment file')
     fs.writeFile('.env', envFile, (e: any) => {
       console.log(e)
     })
     await moveEnvFile(src, cdkDest)
-    // deployCdk(process.env.STACK)
+    CliUx.ux.action.start('Environment file created and moved to directories')
+    
 
-
+    CliUx.ux.action.start('Installing CDK depdendencies...')
     await exec('npm run installCdkDependencies')
+    CliUx.ux.action.stop('CDK dependencies installed')
     await new Promise((resolve, reject) => {
+      CliUx.ux.action.start('Bootstrapping AWS Infrastructure...')
       exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
       if (error) {
-        console.log(error)
         console.log(`error: ${error.message}`)
         reject(error)
         return;
       }
       if (stderr) {
-        console.log(`stderr: ${stderr}`);
+        // console.log(`stderr: ${stderr}`);
         return
       }
-        console.log(`stdout: ${stdout}`);
+        // console.log(`stdout: ${stdout}`);
+        CliUx.ux.action.stop('AWS Infrastructure bootstrapped. To deploy run "kuri deploy"')
         resolve('environemnt bootstrapped')
       })
-    }).then(async () => {
-      await new Promise((resolve, reject) => { 
-        exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
-        if (error) {
-          console.log(error)
-          console.log(`error: ${error.message}`)
-          reject(error)
-          return;
-        }
-        if (stderr) {
-          console.log(`stderr: ${stderr}`);
-          return
-        }
-        console.log(`stdout: ${stdout}`);
-        resolve('cdk deployed')
-      })
-    });
     })
+
+//     let promise1 = new Promise((resolve, reject) => {
+//       CliUx.ux.action.start('Bootstrapping AWS Infrastructure...')
+//       exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
+//       if (error) {
+//         console.log(error)
+//         console.log(`error: ${error.message}`)
+//         reject(error)
+//         return;
+//       }
+//       if (stderr) {
+//         console.log(`stderr: ${stderr}`);
+//         return
+//       }
+//         console.log(`stdout: ${stdout}`);
+//         CliUx.ux.action.stop('AWS Infrastructure bootstrapped. Run ./bin/run deploy to deploy the infrastructure')
+//         resolve('environemnt bootstrapped')
+//       })
+//     })
+
+
+//     let promise2 = new Promise((resolve, reject) => { 
+//       CliUx.ux.action.start('Deploying AWS Infrastructure...')
+//       exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
+//       if (error) {
+//         console.log(error)
+//         console.log(`error: ${error.message}`)
+//         reject(error)
+//         return;
+//       }
+//       if (stderr) {
+//         console.log(`stderr: ${stderr}`);
+//         return
+//       }
+//       console.log(`stdout: ${stdout}`);
+// )
+//       resolve('cdk deployed')
+//     })
+//   })
+//     let tasks = [promise1]
+    
+//     tasks.reduce(function(cur:any, next:any) {
+//       return cur.then(next);
+//     }, RSVP.resolve()).then(function() {
+//       console.log('all scripts have run')
+//     })
+
+
     // await exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
     //   if (error) {
     //     console.log(error)
