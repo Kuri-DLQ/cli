@@ -23,11 +23,13 @@ const joinDLQtoMainQueue = async (mainURL: string, dlqARN: string) => {
   }
 }
 
+const infrastructureScript = process.env.STACK === 'DLQ only' ? 'deployDLQInfrastructure' : 'deployMainInfrastructure'
+
 export default class Deploy extends Command {
   async run(): Promise<void> {
     await new Promise((resolve, reject) => { 
       CliUx.ux.action.start('Deploying AWS Infrastructure...')
-      exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
+      exec(`npm run ${infrastructureScript}`, (error:any, stdout:any, stderr:any) => {
       if (error) {
         console.log(error)
         console.log(`error: ${error.message}`)
@@ -35,19 +37,19 @@ export default class Deploy extends Command {
         return;
       }
       if (stderr) {
-        console.log(`stderr: ${stderr}`);
+        // console.log(`stderr: ${stderr}`);
         return
       }
-      console.log(`stdout: ${stdout}`);
+      // console.log(`stdout: ${stdout}`);
       CliUx.ux.action.stop('AWS Infrastructure deployed.')
       resolve('cdk deployed')
     })
+  }).then(async () => {
+    if (process.env.STACK === 'DLQ Only') {
+      const mainQueueUrl = await CliUx.ux.prompt('What is the URL of your main queue?')
+      const dlqQueueArn = await CliUx.ux.prompt('What is the ARN of your newly provisioned DLQ?')
+      await joinDLQtoMainQueue(mainQueueUrl, dlqQueueArn)    
+    }
   });
-
-  if (process.env.STACK === 'DLQ Only') {
-    const mainQueueUrl = await CliUx.ux.prompt('What is the URL of your main queue?')
-    const dlqQueueArn = await CliUx.ux.prompt('What is the ARN of your newly provisioned DLQ?')
-    joinDLQtoMainQueue(mainQueueUrl, dlqQueueArn)    
-  }
   }
 }

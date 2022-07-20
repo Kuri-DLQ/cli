@@ -77,7 +77,8 @@
     "installClientDepedencies": "cd ../dashboard && npm install && cd ../cli",
     "installCdkDependencies": "cd ../aws_infrastructure && npm install && cd ../cli",
     "bootstrapAWS": "cd ../aws_infrastructure && npm install && cdk bootstrap && cd ../cli",
-    "deployInfrastructure": "cd ../aws_infrastructure && cdk deploy --require-approval never && cd ../cli"
+    "deployMainInfrastructure": "cd ../aws_infrastructure && cdk deploy MainQueueAndDLQStack --require-approval never && ../cli",
+    "deployDLQInfrastructure": "cd ../aws_infrastructure && cdk deploy DlqOnlyStack --require-approval never && ../cli"
   },
   "engines": {
     "node": ">=12.0.0"
