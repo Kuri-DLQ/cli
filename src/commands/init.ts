@@ -68,45 +68,53 @@ export default class Init extends Command {
     }])
     clientPort = clientPort.port
 
-    this.log(stackChoice, awsAccessKey, awsSecretKey, awsRegion, slackPath, serverPort, clientPort)
+    // this.log(stackChoice, awsAccessKey, awsSecretKey, awsRegion, slackPath, serverPort, clientPort)
 
     const envFile = `STACK="${stackChoice}"\nACCESS_KEY="${awsAccessKey}"\nSECRET_KEY="${awsSecretKey}"\n` +
     `REGION="${awsRegion}"\nSLACK_PATH="${slackPath}"\nCLIENT_PORT=${clientPort}\nSERVER_PORT=${serverPort}`
 
-     // installClientDependencies when client dir is added
-    
-    // fs.writeFile('.env', envFile, (e: any) => {
-    //   console.log(e)
-    // })
-    // await moveEnvFile(src, serverDest)
-    CliUx.ux.action.start('Creating environment file')
-    fs.writeFile('.env', envFile, (e: any) => {
-      console.log(e)
-    })
-    await moveEnvFile(src, cdkDest)
-    CliUx.ux.action.start('Environment file created and moved to directories')
-    
+    // Final confirmation
+    const confirmation = await inquirer.prompt([{
+      name: 'confirmation',
+      type: 'confirm',
+      message: `You entered:\n${envFile}\n Please confirm these selections (y/n)`,
+    }])
 
-    CliUx.ux.action.start('Installing CDK depdendencies...')
-    await exec('npm run installCdkDependencies')
-    CliUx.ux.action.stop('CDK dependencies installed')
-    await new Promise((resolve, reject) => {
-      CliUx.ux.action.start('Bootstrapping AWS Infrastructure...')
-      exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
-      if (error) {
-        console.log(`error: ${error.message}`)
-        reject(error)
-        return;
-      }
-      if (stderr) {
-        // console.log(`stderr: ${stderr}`);
-        return
-      }
-        // console.log(`stdout: ${stdout}`);
-        CliUx.ux.action.stop('AWS Infrastructure bootstrapped. To deploy run "kuri deploy"')
-        resolve('environemnt bootstrapped')
+    if (confirmation) {
+      //  installClientDependencies when client dir is added
+      fs.writeFile('.env', envFile, (e: any) => {
+        console.log(e)
       })
-    })
+      await moveEnvFile(src, serverDest)
+
+      fs.writeFile('.env', envFile, (e: any) => {
+        console.log(e)
+      })
+
+      await moveEnvFile(src, cdkDest)
+
+      CliUx.ux.action.start('Installing CDK depdendencies...')
+      await exec('npm run installCdkDependencies')
+      CliUx.ux.action.stop('CDK dependencies installed')
+
+      await new Promise((resolve, reject) => {
+        CliUx.ux.action.start('Bootstrapping AWS Infrastructure...')
+        exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
+        if (error) {
+          console.log(`error: ${error.message}`)
+          reject(error)
+          return;
+        }
+        if (stderr) {
+          // console.log(`stderr: ${stderr}`);
+          return
+        }
+          // console.log(`stdout: ${stdout}`);
+          CliUx.ux.action.stop('AWS Infrastructure bootstrapped. To deploy run "kuri deploy"')
+          resolve('environemnt bootstrapped')
+        })
+      })
+    }
 
 //     let promise1 = new Promise((resolve, reject) => {
 //       CliUx.ux.action.start('Bootstrapping AWS Infrastructure...')
