@@ -3,26 +3,6 @@ import { SetQueueAttributesCommand, SQSClient} from  "@aws-sdk/client-sqs";
 const {exec} = require('child_process');
 require("dotenv").config();
 
-const joinDLQtoMainQueue = async (mainURL: string, dlqARN: string) => {
-  const sqsClient = new SQSClient({ region: process.env.REGION });
-
-  const params = {
-    Attributes: {
-      RedrivePolicy:
-        `{"deadLetterTargetArn":"${dlqARN}",` +
-        '"maxReceiveCount":"3"}',
-    },
-    QueueUrl: `${mainURL}`,
-  };
-
-  try {
-    const data = await sqsClient.send(new SetQueueAttributesCommand(params));
-    console.log("Success", data);
-  } catch (err) {
-    console.log("Error", err);
-  }
-}
-
 const infrastructureScript = process.env.STACK === 'DLQ only' ? 'deployDLQInfrastructure' : 'deployMainInfrastructure'
 
 export default class Deploy extends Command {
@@ -44,12 +24,6 @@ export default class Deploy extends Command {
       CliUx.ux.action.stop('AWS Infrastructure deployed.')
       resolve('cdk deployed')
     })
-  }).then(async () => {
-    if (process.env.STACK === 'DLQ Only') {
-      const mainQueueUrl = await CliUx.ux.prompt('What is the URL of your main queue?')
-      const dlqQueueArn = await CliUx.ux.prompt('What is the ARN of your newly provisioned DLQ?')
-      await joinDLQtoMainQueue(mainQueueUrl, dlqQueueArn)    
-    }
   });
   }
 }
