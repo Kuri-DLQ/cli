@@ -1,7 +1,29 @@
 import {Command, CliUx} from '@oclif/core'
+import { SetQueueAttributesCommand, SQSClient} from  "@aws-sdk/client-sqs";
 const {exec} = require('child_process');
-export default class World extends Command {
+require("dotenv").config();
 
+const joinDLQtoMainQueue = async (mainURL: string, dlqARN: string) => {
+  const sqsClient = new SQSClient({ region: process.env.REGION });
+
+  const params = {
+    Attributes: {
+      RedrivePolicy:
+        `{"deadLetterTargetArn":"${dlqARN}",` +
+        '"maxReceiveCount":"3"}',
+    },
+    QueueUrl: `${mainURL}`,
+  };
+
+  try {
+    const data = await sqsClient.send(new SetQueueAttributesCommand(params));
+    console.log("Success", data);
+  } catch (err) {
+    console.log("Error", err);
+  }
+}
+
+export default class Deploy extends Command {
   async run(): Promise<void> {
     await new Promise((resolve, reject) => { 
       CliUx.ux.action.start('Deploying AWS Infrastructure...')
@@ -21,5 +43,11 @@ export default class World extends Command {
       resolve('cdk deployed')
     })
   });
+
+  if (process.env.STACK === 'DLQ Only') {
+    const mainQueueUrl = await CliUx.ux.prompt('What is the URL of your main queue?')
+    const dlqQueueArn = await CliUx.ux.prompt('What is the ARN of your newly provisioned DLQ?')
+    joinDLQtoMainQueue(mainQueueUrl, dlqQueueArn)    
+  }
   }
 }

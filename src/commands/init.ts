@@ -64,7 +64,7 @@ export default class Init extends Command {
       name: 'port',
       type: 'input',
       default: '3000',
-      message: 'Which port would you like the Kuri server to run on?',
+      message: 'Which port would you like the Kuri client to run on?',
     }])
     clientPort = clientPort.port
 
@@ -93,9 +93,15 @@ export default class Init extends Command {
 
       await moveEnvFile(src, cdkDest)
 
-      CliUx.ux.action.start('Installing CDK depdendencies...')
+      fs.writeFile('.env', envFile, (e: any) => {
+        console.log(e)
+      })
+
+      CliUx.ux.action.start('Installing depdendencies...')
+      // install Client dependencies goes here when ready
+      await exec('npm run installAppDependencies')
       await exec('npm run installCdkDependencies')
-      CliUx.ux.action.stop('CDK dependencies installed')
+      CliUx.ux.action.stop('Dependencies installed')
 
       await new Promise((resolve, reject) => {
         CliUx.ux.action.start('Bootstrapping AWS Infrastructure...')
@@ -111,95 +117,9 @@ export default class Init extends Command {
         }
           // console.log(`stdout: ${stdout}`);
           CliUx.ux.action.stop('AWS Infrastructure bootstrapped. To deploy run "kuri deploy"')
-          resolve('environemnt bootstrapped')
+          resolve('environment bootstrapped')
         })
       })
     }
-
-//     let promise1 = new Promise((resolve, reject) => {
-//       CliUx.ux.action.start('Bootstrapping AWS Infrastructure...')
-//       exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
-//       if (error) {
-//         console.log(error)
-//         console.log(`error: ${error.message}`)
-//         reject(error)
-//         return;
-//       }
-//       if (stderr) {
-//         console.log(`stderr: ${stderr}`);
-//         return
-//       }
-//         console.log(`stdout: ${stdout}`);
-//         CliUx.ux.action.stop('AWS Infrastructure bootstrapped. Run ./bin/run deploy to deploy the infrastructure')
-//         resolve('environemnt bootstrapped')
-//       })
-//     })
-
-
-//     let promise2 = new Promise((resolve, reject) => { 
-//       CliUx.ux.action.start('Deploying AWS Infrastructure...')
-//       exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
-//       if (error) {
-//         console.log(error)
-//         console.log(`error: ${error.message}`)
-//         reject(error)
-//         return;
-//       }
-//       if (stderr) {
-//         console.log(`stderr: ${stderr}`);
-//         return
-//       }
-//       console.log(`stdout: ${stdout}`);
-// )
-//       resolve('cdk deployed')
-//     })
-//   })
-//     let tasks = [promise1]
-    
-//     tasks.reduce(function(cur:any, next:any) {
-//       return cur.then(next);
-//     }, RSVP.resolve()).then(function() {
-//       console.log('all scripts have run')
-//     })
-
-
-    // await exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
-    //   if (error) {
-    //     console.log(error)
-    //     console.log(`error: ${error.message}`)
-    //     return;
-    //   }
-    //   if (stderr) {
-    //     console.log(`stderr: ${stderr}`);
-    //     return
-    //   }
-    //   console.log(`stdout: ${stdout}`);
-    // })
-    // await exec('npm run installAppDependencies'), 
-    // series([() => exec('npm run installCdkDependencies'),
-    // () => exec('npm run bootstrapAWS', (error:any, stdout:any, stderr:any) => {
-    //   if (error) {
-    //     console.log(error)
-    //     console.log(`error: ${error.message}`)
-    //     return;
-    //   }
-    //   if (stderr) {
-    //     console.log(`stderr: ${stderr}`);
-    //     return
-    //   }
-    //   console.log(`stdout: ${stdout}`);
-    // }),
-    // () => exec('npm run deployInfrastructure', (error:any, stdout:any, stderr:any) => {
-    //   if (error) {
-    //     console.log(error)
-    //     console.log(`error: ${error.message}`)
-    //     return;
-    //   }
-    //   if (stderr) {
-    //     console.log(`stderr: ${stderr}`);
-    //     return
-    //   }
-    //   console.log(`stdout: ${stdout}`);
-    // })])
   }
 }
