@@ -1,14 +1,13 @@
+const express = require('express');
 
-const {exec} = require('child_process')
+const app = express();
 
-exec('npm run bootstrapAWS', (error, stdout, stderr) => {
-  if (error) {
-    console.log(`error: ${error.message}`)
-    return
-  }
-  if (stderr) {
-    console.log(`stderr: ${stderr}`);
-    return;
-  }
-  console.log(`stdout: ${stdout}`);
+app.get('/', (req, res) => {
+  res.send('hello')
 });
+
+app.get('/killServer', (req, res) => {
+  process.exit();
+});
+
+app.listen(3000, () => console.log('Server ready'));
