@@ -5,7 +5,6 @@ const exec_options = {
 }
 export default class View extends Command {
   async run() {
-    exec('npm run startServer', exec_options)
-    exec('npm run startDashboard', exec_options)
+    exec('npm run startServerAndDashboard', exec_options)
   }
 }
