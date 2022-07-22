@@ -3,6 +3,14 @@ import { SetQueueAttributesCommand, SQSClient} from  "@aws-sdk/client-sqs";
 const {exec} = require('child_process');
 require("dotenv").config();
 
+const kuriLogo = 
+"██╗  ██╗██╗   ██╗██████╗ ██╗\n" +
+"██║ ██╔╝██║   ██║██╔══██╗██║\n" +
+"█████╔╝ ██║   ██║██████╔╝██║\n" +
+"██╔═██╗ ██║   ██║██╔══██╗██║\n" +
+"██║  ██╗╚██████╔╝██║  ██║██║\n" +
+"╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝\n"
+
 const infrastructureScript = process.env.STACK === 'DLQ only' ? 'deployDLQInfrastructure' : 'deployMainInfrastructure'
 
 export default class Deploy extends Command {
@@ -11,7 +19,6 @@ export default class Deploy extends Command {
       CliUx.ux.action.start('Deploying AWS Infrastructure...')
       exec(`npm run ${infrastructureScript}`, (error:any, stdout:any, stderr:any) => {
       if (error) {
-        console.log(error)
         console.log(`error: ${error.message}`)
         reject(error)
         return;
@@ -20,10 +27,12 @@ export default class Deploy extends Command {
         // console.log(`stderr: ${stderr}`);
         return
       }
-      // console.log(`stdout: ${stdout}`);
-      CliUx.ux.action.stop('AWS Infrastructure deployed.')
+      // console.log(`stdout: ${stdout}`);      
       resolve('cdk deployed')
-    })
+    }).then(() => {
+      CliUx.ux.action.stop('AWS Infrastructure deployed.')
+      this.log(kuriLogo)
+    });    
   });
   }
 }

@@ -12,7 +12,6 @@ const cdkDest: string = '../aws_infrastructure/.env'
 async function moveEnvFile (source: string, destination: string) {
   try {
     await fs.move(source, destination)
-    console.log('success!')
   } catch (err) {
     console.error(err)
   };
