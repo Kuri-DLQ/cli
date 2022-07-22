@@ -29,10 +29,10 @@ export default class Deploy extends Command {
       }
       // console.log(`stdout: ${stdout}`);      
       resolve('cdk deployed')
-    }).then(() => {
-      CliUx.ux.action.stop('AWS Infrastructure deployed.')
-      this.log(kuriLogo)
-    });    
+    })    
+  }).then(() => {
+    CliUx.ux.action.stop('AWS Infrastructure deployed.')
+    this.log(kuriLogo)
   });
   }
 }
