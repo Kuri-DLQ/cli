@@ -77,9 +77,9 @@
     "installClientDepedencies": "cd ../dashboard && npm install && cd ../cli",
     "installCdkDependencies": "cd ../aws_infrastructure && npm install && cd ../cli",
     "bootstrapAWS": "cd ../aws_infrastructure && npm install && cdk bootstrap && cd ../cli",
-    "deployMainInfrastructure": "cd ../aws_infrastructure && cdk deploy MainQueueAndDLQStack --require-approval never && ../cli",
-    "deployDLQInfrastructure": "cd ../aws_infrastructure && cdk deploy DlqOnlyStack --require-approval never && ../cli",
-    "startServerAndDashboard": "cd ../app_server_express && npm start && cd../cli && exit",
+    "deployMainInfrastructure": "cd ../aws_infrastructure && cdk deploy MainQueueAndDLQStack --require-approval never && cd ../cli",
+    "deployDLQInfrastructure": "cd ../aws_infrastructure && cdk deploy DlqOnlyStack --require-approval never && cd ../cli",
+    "startServerAndDashboard": "cd ../app_server_express && npm start && cd../cli",
     "startDashboard": "cd ../dashboard && npm start &",
     "stopDashboard": "cd ../dashboard && npm eject && cd ../cli"
   },
