@@ -36,3 +36,5 @@ export default class Deploy extends Command {
   });
   }
 }
+
+// need to find a way to run the add_env_variables file AFTER the whole infrastructure has been deployed

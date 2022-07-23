@@ -17,14 +17,6 @@ async function moveEnvFile (source: string, destination: string) {
   };
 }
 
-// const deployCdk = (stackChoice: string | undefined) => {
-//   if (stackChoice === 'DLQ Only') {
-//     series([() => exec('cdk deploy <dlq only stack>')]);
-//   } else {
-//     series([() => exec('cdk deploy <main and dlq stack>')]);
-//   }
-// }
-
 export default class Init extends Command {
   static description = 'Initializes Kuri infrastructure'
 
@@ -67,10 +59,8 @@ export default class Init extends Command {
     }])
     clientPort = clientPort.port
 
-    // this.log(stackChoice, awsAccessKey, awsSecretKey, awsRegion, slackPath, serverPort, clientPort)
-
     const envFile = `STACK="${stackChoice}"\nACCESS_KEY="${awsAccessKey}"\nSECRET_KEY="${awsSecretKey}"\n` +
-    `REGION="${awsRegion}"\nSLACK_PATH="${slackPath}"\nCLIENT_PORT=${clientPort}\nSERVER_PORT=${serverPort}`
+    `REGION="${awsRegion}"\nSLACK_PATH="${slackPath}"\nCLIENT_PORT=${clientPort}\nSERVER_PORT=${serverPort}\n`
 
     // Final confirmation
     const confirmation = await inquirer.prompt([{
