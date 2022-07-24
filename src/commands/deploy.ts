@@ -66,9 +66,7 @@ export default class Deploy extends Command {
     CliUx.ux.action.start('Deploying AWS Infrastructure...')
     await cdkApp.deploy(stackName);
     await CliUx.ux.action.stop('AWS Infrastructure deployed.')
-    await this.log(kuriLogo)
   }
-
 }
 
 // need to find a way to run the add_env_variables file AFTER the whole infrastructure has been deployed
