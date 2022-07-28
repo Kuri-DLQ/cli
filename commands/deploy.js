@@ -45,7 +45,7 @@ export const deploy = async () => {
     await createTopic()
     spinner.succeed();
 
-    spinner = log.spin('Creating DynamoDB Table...')
+    spinner = log.spin('Creating Dynam oDB Table...')
     await createTable()
     spinner.succeed();
 
