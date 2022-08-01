@@ -15,7 +15,7 @@ import { addPermissions } from "../../sdk_infrastructure/aws/lambda/addPermissio
 const bucketName = 'kuri-dlq-bucket-arjun'
 import log from '../utils/logger.js'
 
-const kuriLogo = 
+const kuriLogo = "\n" +
 "██╗  ██╗██╗   ██╗██████╗ ██╗\n" +
 "██║ ██╔╝██║   ██║██╔══██╗██║\n" +
 "█████╔╝ ██║   ██║██████╔╝██║\n" +
@@ -31,9 +31,11 @@ export const deploy = async () => {
     await createRole()
     spinner.succeed();
 
-    spinner = log.spin('Creating Main Queue...')
-    await createMainQueue()
-    spinner.succeed();
+    if (process.env.STACK === 'Main Queue and DLQ') {
+      spinner = log.spin('Creating Main Queue...')
+      await createMainQueue()
+      spinner.succeed();
+    }
 
     spinner = log.spin('Creating DLQ...')
     await createDLQ()
@@ -74,7 +76,7 @@ export const deploy = async () => {
     await subscribeToSns()
     spinner.succeed();;
 
-    spinner = log.spin('Adding permissionS for SNS...')
+    spinner = log.spin('Adding permissions for SNS...')
     await addPermissions()
     spinner.succeed();
   } catch (err) {

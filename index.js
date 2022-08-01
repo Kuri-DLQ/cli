@@ -4,7 +4,7 @@ import cli from "commander";
 import { init } from "./commands/init.js";
 import { deploy } from "./commands/deploy.js";
 
-cli.description("Welcome to Kuri DLQ-as-a-Service! See the commands bellow or the documentation at <doc link>");
+cli.description("Welcome to Kuri DLQ-as-a-Service! See the commands below or the documentation at <doc link>");
 cli.name("kuri");
 cli.usage("<command>");
 cli.addHelpCommand(false);
@@ -17,7 +17,7 @@ cli
   // .argument("[postId]", "ID of post you'd like to retrieve.")
   // .option("-p, --pretty", "Pretty-print output from the API.")
   .description(
-    "-- Initialize your Kuri application."
+    "-- Initialize Kuri Application."
   )
   .action(init);
 
