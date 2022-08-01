@@ -5,14 +5,16 @@ import { joinDlqMain } from "../../sdk_infrastructure/aws/sqs/join-dlq-main.js"
 import { createTopic } from "../../sdk_infrastructure/aws/sns/createTopic.js"
 import { createTable } from "../../sdk_infrastructure/aws/dynamodb/createDynamoTable.js"
 import { createBucket } from "../../sdk_infrastructure/aws/s3/createBucket.js"
-import { replaceEnvVariables } from "../../sdk_infrastructure/utils/replaceEnvVariables.js"
+import { setEnvVariables } from "../../sdk_infrastructure/utils/replaceEnvVariables.js"
 import { createZipFiles } from "../../sdk_infrastructure/aws/lambda/createZipFile.js"
 import { pushLambdasToS3 } from "../../sdk_infrastructure/aws/s3/pushLambdasToS3.js"
 import { createLambdas } from "../../sdk_infrastructure/aws/lambda/createAllLambdas.js"
 import { setEventSourceMapping } from "../../sdk_infrastructure/aws/lambda/lambdaEventSourceMapping.js"
 import { subscribeToSns } from "../../sdk_infrastructure/aws/lambda/subscribeToSns.js"
 import { addPermissions } from "../../sdk_infrastructure/aws/lambda/addPermissions.js"
+const bucketName = 'kuri-dlq-bucket-arjun'
 import log from '../utils/logger.js'
+
 const kuriLogo = 
 "██╗  ██╗██╗   ██╗██████╗ ██╗\n" +
 "██║ ██╔╝██║   ██║██╔══██╗██║\n" +
@@ -45,29 +47,24 @@ export const deploy = async () => {
     await createTopic()
     spinner.succeed();
 
-    spinner = log.spin('Creating Dynam oDB Table...')
+    spinner = log.spin('Creating Dynamo Table...')
     await createTable()
     spinner.succeed();
 
     spinner = log.spin('Creating S3 Bucket...')
-    await createBucket()
-    spinner.succeed();
+    await createBucket(bucketName).then(() => spinner.succeed())
 
     spinner = log.spin('Replacing env variables...')
-    await replaceEnvVariables()
-    spinner.succeed();
+    await setEnvVariables().then(() => spinner.succeed())
 
     spinner = log.spin('Creating Zip Files...')
-    await createZipFiles()
-    spinner.succeed();
+    await createZipFiles().then(() => spinner.succeed())
 
     spinner = log.spin('Pushing Lambda Handlers to S3 Bucket...')
-    await pushLambdasToS3()
-    spinner.succeed();
+    await pushLambdasToS3(bucketName).then(() => spinner.succeed())
 
     spinner = log.spin('Creating all Lambdas...')
-    await createLambdas()
-    spinner.succeed();
+    await createLambdas(bucketName).then(() => spinner.succeed())
 
     spinner = log.spin('Setting Event Source Mapping for publishing to SNS...')
     await setEventSourceMapping()
