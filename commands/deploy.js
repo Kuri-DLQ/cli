@@ -17,8 +17,12 @@ import fs from 'fs-extra';
 import { exec } from 'child_process';
 import { getQueueName } from '../../sdk_infrastructure/aws/sqs/queueName.js';
 import prependFile from 'prepend-file';
+import pkg from 'uuid';
 
-const bucketName = 'kuri-dlq-bucket-arjun'
+
+const { v4: uuidv4 } = pkg;
+const bucketName = `kuri-dlq-bucket-${uuidv4()}`
+
 import log from '../utils/logger.js'
 import dotenv from 'dotenv'
 dotenv.config({path:'./.env'})
@@ -35,7 +39,6 @@ async function moveEnvFile(source, destination) {
     console.error(err)
   };
 }
-
 
 const kuriLogo = "\n" +
 "██╗  ██╗██╗   ██╗██████╗ ██╗\n" +

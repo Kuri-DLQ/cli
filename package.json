@@ -12,7 +12,7 @@
     "installAppDependencies": "cd ../app_server_express && npm install && cd ../kuri-cli",
     "installClientDependencies": "cd ../dashboard && npm install && cd ../kuri-cli",
     "installInfraDependencies": "cd ../sdk_infrastructure && npm install && cd ../kuri-cli",
-    "viewDashboard": "cd ../app_server_express && npm start %% cd ../cli"
+    "viewDashboard": "cd ../app_server_express && npm start && cd ../cli"
   },
   "keywords": [],
   "author": "",
