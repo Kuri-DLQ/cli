@@ -155,11 +155,13 @@ export const deploy = async () => {
     await createRole()
     spinner.succeed();
 
-    if (process.env.STACK === 'Main Queue and DLQ') {
+    if (stackChoice === 'Main Queue and DLQ') {
       spinner = log.spin('Creating Main Queue...')
-      await createMainQueue()
-      spinner.succeed();
-    }
+      await createMainQueue().then(async (queueUrl) => {
+        spinner.succeed();
+        mainQueueUrl = queueUrl
+      })
+    }  
 
     spinner = log.spin('Creating DLQ...')
     await createDLQ()
@@ -181,7 +183,7 @@ export const deploy = async () => {
     await createBucket(bucketName).then(() => spinner.succeed())
 
     spinner = log.spin('Replacing env variables...')
-    await setEnvVariables(awsRegion, slackPath).then(() => spinner.succeed())
+    await setEnvVariables(awsRegion, slackPath, mainQueueUrl).then(() => spinner.succeed())
 
     spinner = log.spin('Creating Zip Files...')
     await createZipFiles().then(() => spinner.succeed())
