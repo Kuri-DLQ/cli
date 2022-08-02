@@ -19,7 +19,6 @@ import { getQueueName } from '../../sdk_infrastructure/aws/sqs/queueName.js';
 import prependFile from 'prepend-file';
 import pkg from 'uuid';
 
-
 const { v4: uuidv4 } = pkg;
 const bucketName = `kuri-dlq-bucket-${uuidv4()}`
 
@@ -118,31 +117,18 @@ export const deploy = async () => {
     }])
 
     if (confirmation) {
-      //  installClientDependencies when client dir is added
-      // await fs.writeFile('.env', envFile, (err) => {
-      //   console.log(err)
-      // })
       exec("touch .env");
       await prependFile('.env', envFile);
       await moveEnvFile(src, serverDest);
 
-      // await fs.writeFile('.env', envFile, (err) => {
-      //   console.log(err)
-      // })
       exec("touch .env");
       await prependFile('.env', envFile);
       await moveEnvFile(src, infraDest)
 
-      // await fs.writeFile('.env', envFile, (err) => {
-      //   console.log(err)
-      // })
       exec("touch .env");
       await prependFile('.env', envFile);
       await moveEnvFile(src, clientDest)
 
-      // await fs.writeFile('.env', envFile, (err) => {
-      //   console.log(err)
-      // })
       exec("touch .env");
       await prependFile('.env', envFile);
 
@@ -155,7 +141,10 @@ export const deploy = async () => {
 
   try {
     spinner = log.spin('Creating IAM Role...')
-    await createRole()
+    let roleArn;
+    await createRole().then((role) => {
+      roleArn = role
+    })
     spinner.succeed();
 
     if (stackChoice === 'Main Queue and DLQ') {
@@ -195,7 +184,7 @@ export const deploy = async () => {
     await pushLambdasToS3(bucketName).then(() => spinner.succeed())
 
     spinner = log.spin('Creating all Lambdas...')
-    await createLambdas(bucketName, awsRegion).then(() => spinner.succeed())
+    await createLambdas(bucketName, awsRegion, roleArn).then(() => spinner.succeed())
 
     spinner = log.spin('Setting Event Source Mapping for publishing to SNS...')
     await setEventSourceMapping(awsRegion)
