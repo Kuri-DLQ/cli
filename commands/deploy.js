@@ -28,7 +28,7 @@ const serverDest = '../app_server_express/.env'
 const infraDest = '../sdk_infrastructure/.env'
 const clientDest = '../dashboard/.env'
 
-async function moveEnvFile (source, destination) {
+async function moveEnvFile(source, destination) {
   try {
     await fs.move(source, destination)
   } catch (err) {
