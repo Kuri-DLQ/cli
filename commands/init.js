@@ -1,6 +1,8 @@
 import inquirer from 'inquirer';
 import fs from 'fs-extra';
 import { exec } from 'child_process';
+import { getQueueName } from '../../sdk_infrastructure/aws/sqs/queueName.js';
+import prependFile from 'prepend-file';
 
 const src = './.env'
 const serverDest = '../app_server_express/.env'
@@ -23,6 +25,16 @@ export const init = async () => {
     choices: [{name: 'Main Queue and DLQ'}, {name: 'DLQ only'}],
   }])
   stackChoice = stackChoice.stack
+  
+  let mainQueueUrl;
+  if (stackChoice === 'DLQ only') {
+    mainQueueUrl = await inquirer.prompt([{
+      name: 'mainQueueUrl',
+      message: 'Please provide your main queue url:',
+      type: 'input'
+    }])
+    mainQueueUrl = mainQueueUrl.mainQueueUrl
+  }
 
   let awsRegion = await inquirer.prompt([{
     name: 'region',
@@ -63,32 +75,45 @@ export const init = async () => {
     }])
     clientPort = clientPort.port
 
-    const envFile = `STACK="${stackChoice}"\n` +
+    let envFile = `STACK="${stackChoice}"\n` +
     `REGION="${awsRegion}"\nSLACK_PATH="${slackPath}"\nCLIENT_PORT=${clientPort}\nSERVER_PORT=${serverPort}\n`
-    console.log(envFile)
+
+    if (mainQueueUrl) envFile += `MAIN_QUEUE_URL="${mainQueueUrl}"\nMAIN_QUEUE_NAME="${getQueueName(mainQueueUrl)}"\n`
 
     const confirmation = await inquirer.prompt([{
       name: 'confirmation',
       type: 'confirm',
-      message: `You entered:\n${envFile}\n Please confirm these selections (y/n)`,
+      message: `\nYou entered:\n${envFile}\n Please confirm these selections (y/n)`,
     }])
 
     if (confirmation) {
       //  installClientDependencies when client dir is added
-      await fs.writeFile('.env', envFile, (err) => {
-        console.log(err)
-      })
-      await moveEnvFile(src, serverDest)
+      // await fs.writeFile('.env', envFile, (err) => {
+      //   console.log(err)
+      // })
+      exec("touch .env");
+      await prependFile('.env', envFile);
+      await moveEnvFile(src, serverDest);
 
-      await fs.writeFile('.env', envFile, (err) => {
-        console.log(err)
-      })
+      // await fs.writeFile('.env', envFile, (err) => {
+      //   console.log(err)
+      // })
+      exec("touch .env");
+      await prependFile('.env', envFile);
       await moveEnvFile(src, infraDest)
 
-      await fs.writeFile('.env', envFile, (err) => {
-        console.log(err)
-      })
+      // await fs.writeFile('.env', envFile, (err) => {
+      //   console.log(err)
+      // })
+      exec("touch .env");
+      await prependFile('.env', envFile);
       await moveEnvFile(src, clientDest)
+
+      // await fs.writeFile('.env', envFile, (err) => {
+      //   console.log(err)
+      // })
+      exec("touch .env");
+      await prependFile('.env', envFile);
 
       await exec('npm run installAppDependencies')
       await exec('npm run installClientDependencies')
